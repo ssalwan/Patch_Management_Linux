@@ -29,7 +29,7 @@ fi
 
 ###Touch files
 touch $prechecks
-touch $prechecks
+touch $postchecks
 
 #Reset previous variables
 unset tecreset os internalip externalip nameserver
@@ -41,50 +41,66 @@ check ()
 
 # Check if connected to Internet or not
 ping -c 1 google.com &> /dev/null && echo -e "Internet:  Connected" || echo -e "Internet:  Disconnected"
+echo " "
 
 # Check OS Type
 os=$(uname -o)
 echo -e "Operating System Type :"  $os
+echo " "
 
 # Check OS Release Version and Name
 cat /etc/os-release | grep 'NAME\|VERSION' | grep -v 'VERSION_ID' | grep -v 'PRETTY_NAME' > /tmp/osrelease
 echo -n -e "OS Name :"   && cat /tmp/osrelease | grep -v "VERSION" | cut -f2 -d\"
+echo " "
+
 echo -n -e "OS Version :"  `cat /etc/os-release | grep -w VERSION | cut -f2 -d=`
 echo " "
+echo " "
+
 # Check Architecture
 architecture=$(uname -m)
 echo -e "Architecture :"  $architecture
+echo " "
 
 # Check hostname
 echo -e "Hostname :"  $HOSTNAME
+echo " "
 
 # Check Internal IP
 internalip=$(hostname -I)
 echo -e "Internal IP :"  $internalip
+echo " "
 
 # Check External IP
 externalip=$(curl -s ipecho.net/plain;echo)
 echo -e "External IP :  "$externalip
+echo " "
 
 # Check DNS
 nameservers=$(cat /etc/resolv.conf | sed '1 d' | awk '{print $2}')
 echo -e "Name Servers :"  $nameservers
+echo " "
 
 #Check total CPU processors
 echo -e "CPU processors :"  `grep -c ^processor /proc/cpuinfo`
+echo " "
 
 # Check total RAM and SWAP
 echo -e "Physical Memory :"  `cat /proc/meminfo  | grep MemTotal | awk {'print $2 " " $3'}`
+echo " "
+
 echo -e "Swap Memory :"  `cat /proc/meminfo  | grep SwapTotal | awk {'print $2 " " $3'}`
+echo " "
 
 
 # Check Disk Usages
-df -hP > /tmp/diskusage
 echo -e "Disk Usages :" 
-cat /tmp/diskusage
+echo -e "$(df -hTP | awk {'print $1 " " $2 " " $3 " " $7'} | column -t)"
+echo " "
 
 # Number of mount points
-echo -e "Number of mount points :"   $(df -hP |grep -v Filesystem | wc -l)
+echo -e "Number of mount points :"   $(df -hP |grep -v "Mounted on" | wc -l)
+echo " "
 
 ###List of the running services in RHEL 7+
 echo -e "List of all the running services :" 
@@ -93,7 +109,7 @@ systemctl | grep running | grep -vE "session-1.scope|session-c1.scope"
 echo " ****************************************************************************************************************************************************************************************************************** "
 
 # Remove Temporary Files
-rm /tmp/osrelease /tmp/diskusage
+rm /tmp/osrelease 
 shift $(($OPTIND -1))
 
 }
@@ -102,12 +118,9 @@ shift $(($OPTIND -1))
 Patch_Capture()
 {
 
-###Touch files
+###Touch files and null if previous exist
 touch $patch_file
-
-###Load the num of patches variable
-export num_patches=$(cat $patch_file | wc -l)
-
+>$patch_file
 
 ###Fetch the patches in $patch_file that got installed on the current date
 rpm -qa --last | while read i
@@ -122,6 +135,11 @@ if [[ ! -s $patch_file ]]
 then
  echo "No patches installed today" >> $patch_file
 fi
+
+
+###Load the num of patches variable
+cat $patch_file | wc -l > $REPO/num_patches
+
 }
 
 
@@ -129,32 +147,45 @@ fi
 Patch_Mon()
 {
 
-###Touch files
+###Touch files and null if previous exist
+touch $REPO/sdiff_$b
 touch $content_to_mail
+>$REPO/sdiff_$b
+>$content_to_mail
 
-###Difference in prechecks and postchecks?
-if [[ -f $prechecks && -f $postchecks ]]
-then
-    diff $prechecks $postchecks > $diff_checks
-		if [[ ! -s $diff_checks ]]
-           then
-           export ans="Yes"
-        else
-		   export ans="No"
-        fi
-fi
 
 ###Find out if server got rebooted on the current date?
 if [[ `who -b | awk '{print $3}'` = $(date +%F) ]]
 then
   echo "Server rebooted today!! " >> $content_to_mail
-  if [[ $ans = "Yes" ]]
-  then
-  echo "Difference in checks found : $ans " >> $content_to_mail
-  echo $(sdiff $prechecks $postchecks) >> $content_to_mail
-  echo ""
-  fi
 fi
+
+
+###Difference in prechecks and postchecks?
+if [ -f $prechecks ] && [ -f $postchecks ]
+then
+    diff $prechecks $postchecks > $diff_checks
+    if [[ -s $diff_checks ]]
+       then
+       echo "Difference in checks found : Yes " >> $content_to_mail
+       sdiff $prechecks $postchecks | grep "|" > $REPO/sdiff_$b
+       echo " " >> $content_to_mail
+       echo " " >> $content_to_mail
+       echo " " >> $content_to_mail
+       echo " ####################################################################################################################################################### " >> $content_to_mail
+       cat $REPO/sdiff_$b >> $content_to_mail
+       echo " ####################################################################################################################################################### " >> $content_to_mail
+       echo " " >> $content_to_mail
+
+       else
+       echo "Difference in checks found : No" >> $content_to_mail
+       echo " " >> $content_to_mail
+    fi
+
+fi
+
+
+
 
 ###Display if the patches got installed on the current date.
 if [[ `cat $patch_file` = "No patches installed today" ]]
@@ -162,10 +193,12 @@ then
   echo "No patches installed today" >> $content_to_mail
 else
   echo ".. " >> $content_to_mail
-  echo "We see $num_patches patches have been installed today " >> $content_to_mail
+  echo "We see $(cat $REPO/num_patches) patches have been installed today " >> $content_to_mail
   echo ".. " >> $content_to_mail
   echo ".. " >> $content_to_mail
+  echo " ####################################################################################################################################################### " >> $content_to_mail
   cat $patch_file >> $content_to_mail
+  echo " ####################################################################################################################################################### " >> $content_to_mail
 fi
 
 ###Send $content_to_mail to $EMAIL
