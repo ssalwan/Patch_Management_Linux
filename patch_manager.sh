@@ -29,61 +29,59 @@ touch $prechecks
 unset tecreset os internalip externalip nameserver
 
 ###Prechecks
+
 check ()
 {
 
-# Define Variable tecreset
-tecreset=$(tput sgr0)
-
 # Check if connected to Internet or not
-ping -c 1 google.com &> /dev/null && echo -e '\E[32m'"Internet: $tecreset Connected" || echo -e '\E[32m'"Internet: $tecreset Disconnected"
+ping -c 1 google.com &> /dev/null && echo -e "Internet:  Connected" || echo -e "Internet:  Disconnected"
 
 # Check OS Type
 os=$(uname -o)
-echo -e '\E[32m'"Operating System Type :" $tecreset $os
+echo -e "Operating System Type :"  $os
 
 # Check OS Release Version and Name
 cat /etc/os-release | grep 'NAME\|VERSION' | grep -v 'VERSION_ID' | grep -v 'PRETTY_NAME' > /tmp/osrelease
-echo -n -e '\E[32m'"OS Name :" $tecreset  && cat /tmp/osrelease | grep -v "VERSION" | cut -f2 -d\"
-echo -n -e '\E[32m'"OS Version :" $tecreset `cat /etc/os-release | grep -w VERSION | cut -f2 -d=`
+echo -n -e "OS Name :"   && cat /tmp/osrelease | grep -v "VERSION" | cut -f2 -d\"
+echo -n -e "OS Version :"  `cat /etc/os-release | grep -w VERSION | cut -f2 -d=`
 echo " "
 # Check Architecture
 architecture=$(uname -m)
-echo -e '\E[32m'"Architecture :" $tecreset $architecture
+echo -e "Architecture :"  $architecture
 
 # Check hostname
-echo -e '\E[32m'"Hostname :" $tecreset $HOSTNAME
+echo -e "Hostname :"  $HOSTNAME
 
 # Check Internal IP
 internalip=$(hostname -I)
-echo -e '\E[32m'"Internal IP :" $tecreset $internalip
+echo -e "Internal IP :"  $internalip
 
 # Check External IP
 externalip=$(curl -s ipecho.net/plain;echo)
-echo -e '\E[32m'"External IP : $tecreset "$externalip
+echo -e "External IP :  "$externalip
 
 # Check DNS
 nameservers=$(cat /etc/resolv.conf | sed '1 d' | awk '{print $2}')
-echo -e '\E[32m'"Name Servers :" $tecreset $nameservers
+echo -e "Name Servers :"  $nameservers
 
 #Check total CPU processors
-echo -e '\E[32m'"CPU processors :" $tecreset `grep -c ^processor /proc/cpuinfo`
+echo -e "CPU processors :"  `grep -c ^processor /proc/cpuinfo`
 
 # Check total RAM and SWAP
-echo -e '\E[32m'"Physical Memory :" $tecreset `cat /proc/meminfo  | grep MemTotal | awk {'print $2 " " $3'}`
-echo -e '\E[32m'"Swap Memory :" $tecreset `cat /proc/meminfo  | grep SwapTotal | awk {'print $2 " " $3'}`
+echo -e "Physical Memory :"  `cat /proc/meminfo  | grep MemTotal | awk {'print $2 " " $3'}`
+echo -e "Swap Memory :"  `cat /proc/meminfo  | grep SwapTotal | awk {'print $2 " " $3'}`
 
 
 # Check Disk Usages
 df -hP > /tmp/diskusage
-echo -e '\E[32m'"Disk Usages :" $tecreset
+echo -e "Disk Usages :" 
 cat /tmp/diskusage
 
 # Number of mount points
-echo -e '\E[32m'"Number of mount points :" $tecreset  $(df -hP |grep -v Filesystem | wc -l)
+echo -e "Number of mount points :"   $(df -hP |grep -v Filesystem | wc -l)
 
 ###List of the running services in RHEL 7+
-echo -e '\E[32m'"List of all the running services :" $tecreset
+echo -e "List of all the running services :" 
 echo " ****************************************************************************************************************************************************************************************************************** "
 systemctl | grep running | grep -vE "session-1.scope|session-c1.scope"
 echo " ****************************************************************************************************************************************************************************************************************** "
@@ -93,7 +91,6 @@ rm /tmp/osrelease /tmp/diskusage
 shift $(($OPTIND -1))
 
 }
-
 
 ###Capture if the patches got installed today
 Patch_Capture()
