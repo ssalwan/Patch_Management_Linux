@@ -11,15 +11,21 @@
 ###Load the variables!
 export a=`date | awk {'print $3 " " $2 " " $6'}`
 export b=`date | awk {'print $3 "_" $2 "_" $6'}`
-export patch_file=/tmp/Patches_$b
-export content_to_mail=/tmp/Content_to_mail_$b
-#export prechecks="Location of prechecks file"
-#export postchecks="Location of postchecks file"
-export prechecks=/tmp/prechecks_$b.txt
-export postchecks=/tmp/postchecks_$b.txt
-export diff_checks=/tmp/diff-checks_$b.txt
+export REPO=/MYDATA/$b
+export patch_file=$REPO/patches_$b
+export content_to_mail=$REPO/Content_to_mail_$b
+export prechecks=$REPO/prechecks_$b.txt
+export postchecks=$REPO/postchecks_$b.txt
+export diff_checks=$REPO/diff-checks_$b.txt
 export EMAIL=shubham.salwan@iongroup.com
 
+
+
+###Create the Repository
+if [[ ! -d $REPO ]]
+then
+mkdir $REPO
+fi
 
 ###Touch files
 touch $prechecks
