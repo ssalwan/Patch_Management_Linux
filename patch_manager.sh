@@ -1,3 +1,12 @@
+###################################################
+#!/bin/bash
+#
+#
+#
+#
+#Patch Management script - Includes healtchecks
+##################################################
+
 
 ###Load the variables!
 export a=`date | awk {'print $3 " " $2 " " $6'}`
