@@ -168,7 +168,7 @@ then
     if [[ -s $diff_checks ]]
        then
        echo "Difference in checks found : Yes " >> $content_to_mail
-       sdiff $prechecks $postchecks | grep "|" > $REPO/sdiff_$b
+       sdiff -s $prechecks $postchecks > $REPO/sdiff_$b
        echo " " >> $content_to_mail
        echo " " >> $content_to_mail
        echo " " >> $content_to_mail
