@@ -24,7 +24,7 @@ export EMAIL=shubham.salwan@iongroup.com
 ###Create the Repository
 if [[ ! -d $REPO ]]
 then
-mkdir $REPO
+mkdir -p $REPO
 fi
 
 ###Touch files
