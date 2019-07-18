@@ -92,15 +92,21 @@ echo " "
 echo -e "Swap Memory :"  `cat /proc/meminfo  | grep SwapTotal | awk {'print $2 " " $3'}`
 echo " "
 
-
 # Check Disk Usages
-echo -e "Disk Usages :" 
+echo -e "Disk Usages :"
 echo -e "$(df -hTP | awk {'print $1 " " $2 " " $3 " " $7'} | column -t)"
 echo " "
 
-# Number of mount points
-echo -e "Number of mount points :"   $(df -hP |grep -v "Mounted on" | wc -l)
+# Total mounts
+echo -e " Mounts listed below : "
+echo " ****************************************************************************************************************************************************************************************************************** "
+mount | sort -u
+echo " ****************************************************************************************************************************************************************************************************************** "
+
+# Number of mounts
+echo -e "Number of mount points :"   $(mount | sort -u | wc -l)
 echo " "
+
 
 ###List of the running services in RHEL 7+
 echo -e "List of all the running services :" 
@@ -158,6 +164,8 @@ touch $content_to_mail
 if [[ `who -b | awk '{print $3}'` = $(date +%F) ]]
 then
   echo "Server rebooted today!! " >> $content_to_mail
+  echo " " >> $content_to_mai
+  echo " " >> $content_to_mai
 fi
 
 
@@ -192,10 +200,10 @@ if [[ `cat $patch_file` = "No patches installed today" ]]
 then
   echo "No patches installed today" >> $content_to_mail
 else
-  echo ".. " >> $content_to_mail
+  echo " " >> $content_to_mail
   echo "We see $(cat $REPO/num_patches) patches have been installed today " >> $content_to_mail
-  echo ".. " >> $content_to_mail
-  echo ".. " >> $content_to_mail
+  echo " " >> $content_to_mail
+  echo " " >> $content_to_mail
   echo " ####################################################################################################################################################### " >> $content_to_mail
   cat $patch_file >> $content_to_mail
   echo " ####################################################################################################################################################### " >> $content_to_mail
