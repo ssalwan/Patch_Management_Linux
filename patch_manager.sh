@@ -164,8 +164,8 @@ touch $content_to_mail
 if [[ `who -b | awk '{print $3}'` = $(date +%F) ]]
 then
   echo "Server rebooted today!! " >> $content_to_mail
-  echo " " >> $content_to_mai
-  echo " " >> $content_to_mai
+  echo " " >> $content_to_mail
+  echo " " >> $content_to_mail
 fi
 
 
