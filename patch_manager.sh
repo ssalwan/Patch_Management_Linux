@@ -176,7 +176,7 @@ then
     if [[ -s $diff_checks ]]
        then
        echo "Difference in checks found : Yes " >> $content_to_mail
-       sdiff -s $prechecks $postchecks > $REPO/sdiff_$b
+       sdiff -s --width=200 $prechecks $postchecks > $REPO/sdiff_$b
        echo " " >> $content_to_mail
        echo " " >> $content_to_mail
        echo " " >> $content_to_mail
@@ -230,8 +230,14 @@ case "$1" in
         capture)
             Patch_Capture
             ;;         
+
+        build)
+            Patch_Capture
+            Patch_Mon
+            ;;
+
         *)
-            echo $"Usage: $0 {prechecks|postchecks|mon|capture}"
+            echo $"Usage: $0 {prechecks|postchecks|build|capture|mon}"
             exit 1
  
 esac
