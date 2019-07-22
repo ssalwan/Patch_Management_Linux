@@ -163,7 +163,11 @@ touch $content_to_mail
 ###Find out if server got rebooted on the current date?
 if [[ `who -b | awk '{print $3}'` = $(date +%F) ]]
 then
-  echo "Server rebooted today!! " >> $content_to_mail
+  echo "Server rebooted today : Yes " >> $content_to_mail
+  echo " " >> $content_to_mail
+  echo " " >> $content_to_mail
+else
+  echo "Server rebooted today : No " >> $content_to_mail
   echo " " >> $content_to_mail
   echo " " >> $content_to_mail
 fi
