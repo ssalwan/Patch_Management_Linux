@@ -28,8 +28,8 @@ mkdir -p $REPO
 fi
 
 ###Touch files
-touch $prechecks
-touch $postchecks
+#touch $prechecks
+#touch $postchecks
 
 #Reset previous variables
 unset tecreset os internalip externalip nameserver
@@ -72,9 +72,9 @@ echo -e "Internal IP :"  $internalip
 echo " "
 
 # Check External IP
-externalip=$(curl -s ipecho.net/plain;echo)
-echo -e "External IP :  "$externalip
-echo " "
+#externalip=$(curl -s ipecho.net/plain;echo)
+#echo -e "External IP :  "$externalip
+#echo " "
 
 # Check DNS
 nameservers=$(cat /etc/resolv.conf | sed '1 d' | awk '{print $2}')
@@ -221,9 +221,13 @@ cat $content_to_mail | mail -s "Patch Management | $(hostname) | $(date +%D)" $E
 ###Actual job starts here!!!
 case "$1" in
         prechecks)
+	    ###Touch files
+	    touch $prechecks
             check > $prechecks
             ;;
         postchecks)
+            ###Touch files
+            touch $postchecks
             check > $postchecks
             ;;
   
