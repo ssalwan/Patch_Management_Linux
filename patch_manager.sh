@@ -31,6 +31,7 @@ fi
 ###Touch files
 #touch $prechecks
 #touch $postchecks
+touch /var/lock/subsys/patch_manager
 
 #Reset previous variables
 unset tecreset os internalip externalip nameserver
@@ -41,19 +42,19 @@ unset tecreset os internalip externalip nameserver
 install ()
 {
 echo "#!/bin/bash" > $install_loc
-echo "# chkconfig: 056 99 00 " >> $install_loc
+echo "# chkconfig: 0356 99 00 " >> $install_loc
 echo "#  " >> $install_loc
 echo "LOCKFILE=/var/lock/subsys/patch_manager " >> $install_loc
 echo " " >> $install_loc
 echo " " >> $install_loc
-echo "case "$1" in " >> $install_loc
+echo "case "\$1" in " >> $install_loc
 echo "        start) " >> $install_loc
 echo "            /MYDATA/scripts/Patch_Management/second_repo/patch_manager.sh postchecks " >> $install_loc
-echo "	    touch $LOCKFILE " >> $install_loc
+echo "      touch \$LOCKFILE " >> $install_loc
 echo "            ;; " >> $install_loc
 echo "        stop) " >> $install_loc
-echo "	    rm $LOCKFILE " >> $install_loc
-echo "            /MYDATA/scripts/Patch_Management/seco " >> $install_locnd_repo/patch_manager.sh prechecks
+echo "      rm \$LOCKFILE " >> $install_loc
+echo "            /MYDATA/scripts/Patch_Management/second_repo/patch_manager.sh prechecks " >> $install_loc
 echo "            ;; " >> $install_loc
 echo " " >> $install_loc
 echo "esac " >> $install_loc
@@ -135,13 +136,13 @@ echo " "
 
 
 ###List of the running services in RHEL 7+
-echo -e "List of all the running services :" 
+echo -e "List of all the running services :"
 echo " ****************************************************************************************************************************************************************************************************** "
 systemctl | grep running | grep -vE "session-1.scope|session-c1.scope" | awk {'print $1 " " $2 " " $3 " " $4'} | column -t
 echo " ****************************************************************************************************************************************************************************************************** "
 
 # Remove Temporary Files
-rm /tmp/osrelease 
+rm /tmp/osrelease
 shift $(($OPTIND -1))
 
 }
@@ -241,18 +242,18 @@ fi
 
 ###Send $content_to_mail to $EMAIL
 cat $content_to_mail | mail -s "Patch Management | $(hostname) | $(date +%D)" $EMAIL
- 
+
 }
 
 ###Actual job starts here!!!
 case "$1" in
         install)
             ###Install the chkconfig configuration
-            install > $REPO/..
+            install > $REPO/../install.log
             ;;
         prechecks)
-	    ###Touch files
-	    touch $prechecks
+            ###Touch files
+            touch $prechecks
             check > $prechecks
             ;;
         postchecks)
@@ -260,14 +261,14 @@ case "$1" in
             touch $postchecks
             check > $postchecks
             ;;
-  
+
         mon)
             Patch_Mon
             ;;
-         
+
         capture)
             Patch_Capture
-            ;;         
+            ;;
 
         build)
             Patch_Capture
@@ -277,5 +278,6 @@ case "$1" in
         *)
             echo $"Usage: $0 {install|prechecks|postchecks|build|capture|mon}"
             exit 1
- 
+
 esac
+
