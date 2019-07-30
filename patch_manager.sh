@@ -17,6 +17,7 @@ export content_to_mail=$REPO/Content_to_mail_$b
 export prechecks=$REPO/prechecks_$b.txt
 export postchecks=$REPO/postchecks_$b.txt
 export diff_checks=$REPO/diff-checks_$b.txt
+export install_loc=/etc/init.d/patch_manager
 export EMAIL=shubham.salwan@iongroup.com
 
 
@@ -35,6 +36,31 @@ fi
 unset tecreset os internalip externalip nameserver
 
 ###Prechecks
+
+###Install the chkconfig configuration
+install ()
+{
+echo "#!/bin/bash" > $install_loc
+echo "# chkconfig: 056 99 00 " >> $install_loc
+echo "#  " >> $install_loc
+echo "LOCKFILE=/var/lock/subsys/patch_manager " >> $install_loc
+echo " " >> $install_loc
+echo " " >> $install_loc
+echo "case "$1" in " >> $install_loc
+echo "        start) " >> $install_loc
+echo "            /MYDATA/scripts/Patch_Management/second_repo/patch_manager.sh postchecks " >> $install_loc
+echo "	    touch $LOCKFILE " >> $install_loc
+echo "            ;; " >> $install_loc
+echo "        stop) " >> $install_loc
+echo "	    rm $LOCKFILE " >> $install_loc
+echo "            /MYDATA/scripts/Patch_Management/seco " >> $install_locnd_repo/patch_manager.sh prechecks
+echo "            ;; " >> $install_loc
+echo " " >> $install_loc
+echo "esac " >> $install_loc
+
+chmod 755 $install_loc
+chkconfig --add patch_manager
+}
 
 check ()
 {
@@ -220,6 +246,10 @@ cat $content_to_mail | mail -s "Patch Management | $(hostname) | $(date +%D)" $E
 
 ###Actual job starts here!!!
 case "$1" in
+        install)
+            ###Install the chkconfig configuration
+            install > $REPO/..
+            ;;
         prechecks)
 	    ###Touch files
 	    touch $prechecks
@@ -245,7 +275,7 @@ case "$1" in
             ;;
 
         *)
-            echo $"Usage: $0 {prechecks|postchecks|build|capture|mon}"
+            echo $"Usage: $0 {install|prechecks|postchecks|build|capture|mon}"
             exit 1
  
 esac
