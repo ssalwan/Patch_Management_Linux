@@ -42,7 +42,7 @@ unset tecreset os internalip externalip nameserver
 install ()
 {
 echo "#!/bin/bash" > $install_loc
-echo "# chkconfig: 0356 99 00 " >> $install_loc
+echo "# chkconfig: 0356 99 01 " >> $install_loc
 echo "#  " >> $install_loc
 echo "LOCKFILE=/var/lock/subsys/patch_manager " >> $install_loc
 echo " " >> $install_loc
