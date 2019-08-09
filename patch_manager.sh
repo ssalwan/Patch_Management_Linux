@@ -11,13 +11,13 @@
 ###Load the variables!
 export a=`date | awk {'print $3 " " $2 " " $6'}`
 export b=`date | awk {'print $3 "_" $2 "_" $6'}`
-export REPO=/MYDATA/$b
+export REPO=/data04/$b
 export patch_file=$REPO/patches_$b
 export content_to_mail=$REPO/Content_to_mail_$b
 export prechecks=$REPO/prechecks_$b.txt
 export postchecks=$REPO/postchecks_$b.txt
 export diff_checks=$REPO/diff-checks_$b.txt
-export install_loc=/etc/init.d/patch_manager
+#export install_loc=/etc/init.d/patch_manager
 export EMAIL=shubham.salwan@iongroup.com
 
 
@@ -31,7 +31,6 @@ fi
 ###Touch files
 #touch $prechecks
 #touch $postchecks
-touch /var/lock/subsys/patch_manager
 
 #Reset previous variables
 unset tecreset os internalip externalip nameserver
@@ -41,28 +40,18 @@ unset tecreset os internalip externalip nameserver
 ###Install the chkconfig configuration
 install ()
 {
-echo "#!/bin/bash" > $install_loc
-echo "# chkconfig: 0356 99 01 " >> $install_loc
-echo "#  " >> $install_loc
-echo "LOCKFILE=/var/lock/subsys/patch_manager " >> $install_loc
-echo " " >> $install_loc
-echo " " >> $install_loc
-echo "case "\$1" in " >> $install_loc
-echo "        start) " >> $install_loc
-echo "            /MYDATA/scripts/Patch_Management/second_repo/patch_manager.sh postchecks " >> $install_loc
-echo "      touch \$LOCKFILE " >> $install_loc
-echo "            ;; " >> $install_loc
-echo "        stop) " >> $install_loc
-echo "      rm \$LOCKFILE " >> $install_loc
-echo "            /MYDATA/scripts/Patch_Management/second_repo/patch_manager.sh prechecks " >> $install_loc
-echo "            ;; " >> $install_loc
-echo " " >> $install_loc
-echo "esac " >> $install_loc
+in=$REPO/../install-$b
+mkdir -p $in
+crontab -l > $in/crontab.txt
+echo "################################## ASP TICKET ##################################" >> $in/crontab.txt
+echo "15 0 * * 6 /data04/wss_alerts/patch_manager.sh prechecks" >> $in/crontab.txt
+echo "@reboot sleep 60 && /data04/wss_alerts/patch_manager.sh postchecks" >> $in/crontab.txt
+echo "@reboot sleep 100 && /data04/wss_alerts/patch_manager.sh build" >> $in/crontab.txt
+echo "################################################################################" >> $in/crontab.txt
+crontab $in/crontab.txt
 
-chmod 755 $install_loc
-chkconfig --add patch_manager
+
 }
-
 check ()
 {
 
@@ -121,24 +110,24 @@ echo " "
 
 # Check Disk Usages
 echo -e "Disk Usages :"
-echo -e "$(df -hTP | awk {'print $1 " " $2 " " $3 " " $7'} | column -t)"
+echo -e "$(df -hTP | grep -E "ext|nfs"| awk {'print $1 " " $2 " " $3 " " $7'} | column -t)"
 echo " "
 
 # Total mounts
 echo -e " Mounts listed below : "
 echo " ****************************************************************************************************************************************************************************************************** "
-mount | sort -u
+mount |grep -E "ext|nfs" | sort -u
 echo " ****************************************************************************************************************************************************************************************************** "
 
 # Number of mounts
-echo -e "Number of mount points :"   $(mount | sort -u | wc -l)
+echo -e "Number of mount points :"   $(mount |grep -E "ext|nfs" | sort -u | wc -l)
 echo " "
 
 
 ###List of the running services in RHEL 7+
 echo -e "List of all the running services :"
 echo " ****************************************************************************************************************************************************************************************************** "
-systemctl | grep running | grep -vE "session-1.scope|session-c1.scope" | awk {'print $1 " " $2 " " $3 " " $4'} | column -t
+systemctl | grep running | sort |grep -vE "session" | awk {'print $1 " " $2 " " $3 " " $4'} | column -t
 echo " ****************************************************************************************************************************************************************************************************** "
 
 # Remove Temporary Files
