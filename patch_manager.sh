@@ -9,8 +9,8 @@
 
 
 ###Load the variables!
-export a=`date | awk {'print $3 " " $2 " " $6'}`
-export b=`date | awk {'print $3 "_" $2 "_" $6'}`
+export b=`date +%d_%b_%Y`
+#export b=`date | awk {'print $3 "_" $2 "_" $6'}`
 export REPO=/data04/$b
 export patch_file=$REPO/patches_$b
 export content_to_mail=$REPO/Content_to_mail_$b
@@ -147,7 +147,7 @@ touch $patch_file
 ###Fetch the patches in $patch_file that got installed on the current date
 rpm -qa --last | while read i
 do
-if [[ `echo $i | awk {'print $3 " "$4 " " $5'}` = "$a" ]]
+if [[ "`echo $i | awk {'print $3 "_"$4 "_" $5'}`" == "$b" ]]
 then
   echo $i | awk {'print $1'} >> $patch_file
 fi
@@ -216,7 +216,7 @@ fi
 
 
 ###Display if the patches got installed on the current date.
-if [[ `cat $patch_file` = "No patches installed today" ]]
+if [[ "`cat $patch_file`" == "No patches installed today" ]]
 then
   echo "No patches installed today" >> $content_to_mail
 else
@@ -269,4 +269,3 @@ case "$1" in
             exit 1
 
 esac
-
